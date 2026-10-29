@@ -1,0 +1,1343 @@
+[
+ {
+  "name": "type-basic",
+  "cls": "Ajv",
+  "opts": {},
+  "schema": "{\"type\":\"string\"}",
+  "data": [
+   "1",
+   "\"a\"",
+   "null"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/type\",\"keyword\":\"type\",\"params\":{\"type\":\"string\"},\"message\":\"must be string\"}]",
+    "data": "1"
+   },
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "\"a\""
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/type\",\"keyword\":\"type\",\"params\":{\"type\":\"string\"},\"message\":\"must be string\"}]",
+    "data": "null"
+   }
+  ],
+  "warnings": []
+ },
+ {
+  "name": "type-union",
+  "cls": "Ajv",
+  "opts": {
+   "allowUnionTypes": true,
+   "allErrors": true
+  },
+  "schema": "{\"type\":[\"number\",\"string\"],\"minimum\":2,\"minLength\":2}",
+  "data": [
+   "1",
+   "\"a\"",
+   "true",
+   "3"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/minimum\",\"keyword\":\"minimum\",\"params\":{\"comparison\":\">=\",\"limit\":2},\"message\":\"must be >= 2\"}]",
+    "data": "1"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/minLength\",\"keyword\":\"minLength\",\"params\":{\"limit\":2},\"message\":\"must NOT have fewer than 2 characters\"}]",
+    "data": "\"a\""
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/type\",\"keyword\":\"type\",\"params\":{\"type\":[\"number\",\"string\"]},\"message\":\"must be number,string\"}]",
+    "data": "true"
+   },
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "3"
+   }
+  ],
+  "warnings": []
+ },
+ {
+  "name": "integer-infinity",
+  "cls": "Ajv",
+  "opts": {
+   "strictNumbers": false
+  },
+  "schema": "{\"type\":\"integer\"}",
+  "data": [
+   "1.5",
+   "1e400",
+   "2"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/type\",\"keyword\":\"type\",\"params\":{\"type\":\"integer\"},\"message\":\"must be integer\"}]",
+    "data": "1.5"
+   },
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "null"
+   },
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "2"
+   }
+  ],
+  "warnings": []
+ },
+ {
+  "name": "coerce-number",
+  "cls": "Ajv",
+  "opts": {
+   "coerceTypes": true
+  },
+  "schema": "{\"type\":\"object\",\"properties\":{\"a\":{\"type\":\"number\"},\"b\":{\"type\":\"boolean\"},\"c\":{\"type\":\"null\"},\"d\":{\"type\":\"string\"}}}",
+  "data": [
+   "{\"a\":\"0x1A\",\"b\":\"true\",\"c\":\"\",\"d\":1e21}",
+   "{\"a\":\" 12 \",\"b\":0,\"c\":0,\"d\":true}",
+   "{\"a\":\"x\"}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "{\"a\":26,\"b\":true,\"c\":null,\"d\":\"1e+21\"}"
+   },
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "{\"a\":12,\"b\":false,\"c\":null,\"d\":\"true\"}"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"/a\",\"schemaPath\":\"#/properties/a/type\",\"keyword\":\"type\",\"params\":{\"type\":\"number\"},\"message\":\"must be number\"}]",
+    "data": "{\"a\":\"x\"}"
+   }
+  ],
+  "warnings": []
+ },
+ {
+  "name": "coerce-array",
+  "cls": "Ajv",
+  "opts": {
+   "coerceTypes": "array"
+  },
+  "schema": "{\"properties\":{\"a\":{\"type\":\"array\",\"items\":{\"type\":\"number\"}},\"b\":{\"type\":\"string\"}}}",
+  "data": [
+   "{\"a\":\"5\",\"b\":[\"x\"]}",
+   "{\"b\":[[1]]}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "{\"a\":[5],\"b\":\"x\"}"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"/b\",\"schemaPath\":\"#/properties/b/type\",\"keyword\":\"type\",\"params\":{\"type\":\"string\"},\"message\":\"must be string\"}]",
+    "data": "{\"b\":[[1]]}"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"object\" for keyword \"properties\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "coerce-integer",
+  "cls": "Ajv",
+  "opts": {
+   "coerceTypes": true
+  },
+  "schema": "{\"items\":{\"type\":\"integer\"}}",
+  "data": [
+   "[\"1.5\",\"2\",true,null]"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"/0\",\"schemaPath\":\"#/items/type\",\"keyword\":\"type\",\"params\":{\"type\":\"integer\"},\"message\":\"must be integer\"}]",
+    "data": "[\"1.5\",\"2\",true,null]"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"array\" for keyword \"items\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "multipleOf",
+  "cls": "Ajv",
+  "opts": {
+   "allErrors": true
+  },
+  "schema": "{\"multipleOf\":0.1,\"maximum\":1e+21}",
+  "data": [
+   "0.3",
+   "1e21",
+   "0.35"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/multipleOf\",\"keyword\":\"multipleOf\",\"params\":{\"multipleOf\":0.1},\"message\":\"must be multiple of 0.1\"}]",
+    "data": "0.3"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/multipleOf\",\"keyword\":\"multipleOf\",\"params\":{\"multipleOf\":0.1},\"message\":\"must be multiple of 0.1\"}]",
+    "data": "1e+21"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/multipleOf\",\"keyword\":\"multipleOf\",\"params\":{\"multipleOf\":0.1},\"message\":\"must be multiple of 0.1\"}]",
+    "data": "0.35"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"number\" for keyword \"maximum\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"number\" for keyword \"multipleOf\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "multipleOf-prec",
+  "cls": "Ajv",
+  "opts": {
+   "multipleOfPrecision": 2
+  },
+  "schema": "{\"multipleOf\":0.1}",
+  "data": [
+   "0.3",
+   "0.35"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "0.3"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/multipleOf\",\"keyword\":\"multipleOf\",\"params\":{\"multipleOf\":0.1},\"message\":\"must be multiple of 0.1\"}]",
+    "data": "0.35"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"number\" for keyword \"multipleOf\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "exclusive",
+  "cls": "Ajv",
+  "opts": {
+   "allErrors": true
+  },
+  "schema": "{\"exclusiveMinimum\":1,\"exclusiveMaximum\":3}",
+  "data": [
+   "1",
+   "3",
+   "2"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/exclusiveMinimum\",\"keyword\":\"exclusiveMinimum\",\"params\":{\"comparison\":\">\",\"limit\":1},\"message\":\"must be > 1\"}]",
+    "data": "1"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/exclusiveMaximum\",\"keyword\":\"exclusiveMaximum\",\"params\":{\"comparison\":\"<\",\"limit\":3},\"message\":\"must be < 3\"}]",
+    "data": "3"
+   },
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "2"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"number\" for keyword \"exclusiveMaximum\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"number\" for keyword \"exclusiveMinimum\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "lengths",
+  "cls": "Ajv",
+  "opts": {
+   "allErrors": true
+  },
+  "schema": "{\"minLength\":2,\"maxLength\":3}",
+  "data": [
+   "\"😀\"",
+   "\"😀😀😀😀\"",
+   "\"ab\""
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/minLength\",\"keyword\":\"minLength\",\"params\":{\"limit\":2},\"message\":\"must NOT have fewer than 2 characters\"}]",
+    "data": "\"😀\""
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/maxLength\",\"keyword\":\"maxLength\",\"params\":{\"limit\":3},\"message\":\"must NOT have more than 3 characters\"}]",
+    "data": "\"😀😀😀😀\""
+   },
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "\"ab\""
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"string\" for keyword \"maxLength\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"string\" for keyword \"minLength\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "pattern-u",
+  "cls": "Ajv",
+  "opts": {},
+  "schema": "{\"pattern\":\"^\\\\p{L}+$\"}",
+  "data": [
+   "\"héllo\"",
+   "\"a1\""
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "\"héllo\""
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/pattern\",\"keyword\":\"pattern\",\"params\":{\"pattern\":\"^\\\\p{L}+$\"},\"message\":\"must match pattern \\\"^\\\\p{L}+$\\\"\"}]",
+    "data": "\"a1\""
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"string\" for keyword \"pattern\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "pattern-invalid",
+  "cls": "Ajv",
+  "opts": {},
+  "schema": "{\"pattern\":\"(\"}",
+  "data": [],
+  "compile": "Invalid regular expression: /(/u: Unterminated group",
+  "results": [],
+  "warnings": [
+   "strict mode: missing type \"string\" for keyword \"pattern\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "patternProperties",
+  "cls": "Ajv",
+  "opts": {
+   "allErrors": true
+  },
+  "schema": "{\"patternProperties\":{\"^a\":{\"type\":\"number\"},\"b$\":{\"type\":\"string\"}},\"additionalProperties\":false}",
+  "data": [
+   "{\"ab\":1,\"x\":2,\"a\":\"s\"}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/additionalProperties\",\"keyword\":\"additionalProperties\",\"params\":{\"additionalProperty\":\"x\"},\"message\":\"must NOT have additional properties\"},{\"instancePath\":\"/a\",\"schemaPath\":\"#/patternProperties/%5Ea/type\",\"keyword\":\"type\",\"params\":{\"type\":\"number\"},\"message\":\"must be number\"},{\"instancePath\":\"/ab\",\"schemaPath\":\"#/patternProperties/b%24/type\",\"keyword\":\"type\",\"params\":{\"type\":\"string\"},\"message\":\"must be string\"}]",
+    "data": "{\"ab\":1,\"x\":2,\"a\":\"s\"}"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"object\" for keyword \"additionalProperties\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"object\" for keyword \"patternProperties\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "uniqueItems-fast",
+  "cls": "Ajv",
+  "opts": {},
+  "schema": "{\"items\":{\"type\":[\"string\",\"number\"]},\"uniqueItems\":true}",
+  "data": [
+   "[1,\"1\",2]",
+   "[1,\"a\",1]",
+   "[\"__proto__\",\"__proto__\"]"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "[1,\"1\",2]"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/uniqueItems\",\"keyword\":\"uniqueItems\",\"params\":{\"i\":0,\"j\":2},\"message\":\"must NOT have duplicate items (items ## 2 and 0 are identical)\"}]",
+    "data": "[1,\"a\",1]"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/uniqueItems\",\"keyword\":\"uniqueItems\",\"params\":{\"i\":0,\"j\":1},\"message\":\"must NOT have duplicate items (items ## 1 and 0 are identical)\"}]",
+    "data": "[\"__proto__\",\"__proto__\"]"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"array\" for keyword \"uniqueItems\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"array\" for keyword \"items\" at \"#\" (strictTypes)",
+   "strict mode: use allowUnionTypes to allow union type keyword at \"#/items\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "uniqueItems-deep",
+  "cls": "Ajv",
+  "opts": {},
+  "schema": "{\"uniqueItems\":true}",
+  "data": [
+   "[{\"a\":1},{\"a\":1}]",
+   "[[1],[2]]",
+   "[0,-0]"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/uniqueItems\",\"keyword\":\"uniqueItems\",\"params\":{\"i\":1,\"j\":0},\"message\":\"must NOT have duplicate items (items ## 0 and 1 are identical)\"}]",
+    "data": "[{\"a\":1},{\"a\":1}]"
+   },
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "[[1],[2]]"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/uniqueItems\",\"keyword\":\"uniqueItems\",\"params\":{\"i\":1,\"j\":0},\"message\":\"must NOT have duplicate items (items ## 0 and 1 are identical)\"}]",
+    "data": "[0,0]"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"array\" for keyword \"uniqueItems\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "tuple",
+  "cls": "Ajv",
+  "opts": {
+   "strictTuples": false,
+   "allErrors": true
+  },
+  "schema": "{\"items\":[{\"type\":\"number\"},{\"type\":\"string\"}],\"additionalItems\":false}",
+  "data": [
+   "[1,\"a\",3]",
+   "[\"a\",1]",
+   "[]"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/additionalItems\",\"keyword\":\"additionalItems\",\"params\":{\"limit\":2},\"message\":\"must NOT have more than 2 items\"}]",
+    "data": "[1,\"a\",3]"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"/0\",\"schemaPath\":\"#/items/0/type\",\"keyword\":\"type\",\"params\":{\"type\":\"number\"},\"message\":\"must be number\"},{\"instancePath\":\"/1\",\"schemaPath\":\"#/items/1/type\",\"keyword\":\"type\",\"params\":{\"type\":\"string\"},\"message\":\"must be string\"}]",
+    "data": "[\"a\",1]"
+   },
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "[]"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"array\" for keyword \"additionalItems\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"array\" for keyword \"items\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "contains",
+  "cls": "Ajv2020",
+  "opts": {
+   "allErrors": true
+  },
+  "schema": "{\"contains\":{\"type\":\"number\"},\"minContains\":2,\"maxContains\":3}",
+  "data": [
+   "[1,\"a\"]",
+   "[1,2]",
+   "[1,2,3,4]"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"/1\",\"schemaPath\":\"#/contains/type\",\"keyword\":\"type\",\"params\":{\"type\":\"number\"},\"message\":\"must be number\"},{\"instancePath\":\"\",\"schemaPath\":\"#/contains\",\"keyword\":\"contains\",\"params\":{\"minContains\":2,\"maxContains\":3},\"message\":\"must contain at least 2 and no more than 3 valid item(s)\"}]",
+    "data": "[1,\"a\"]"
+   },
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "[1,2]"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/contains\",\"keyword\":\"contains\",\"params\":{\"minContains\":2,\"maxContains\":3},\"message\":\"must contain at least 2 and no more than 3 valid item(s)\"}]",
+    "data": "[1,2,3,4]"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"array\" for keyword \"contains\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"array\" for keyword \"maxContains\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"array\" for keyword \"minContains\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "prefixItems",
+  "cls": "Ajv2020",
+  "opts": {
+   "strictTuples": false
+  },
+  "schema": "{\"prefixItems\":[{\"type\":\"number\"}],\"items\":{\"type\":\"string\"}}",
+  "data": [
+   "[1,\"a\",\"b\"]",
+   "[1,2]"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "[1,\"a\",\"b\"]"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"/1\",\"schemaPath\":\"#/items/type\",\"keyword\":\"type\",\"params\":{\"type\":\"string\"},\"message\":\"must be string\"}]",
+    "data": "[1,2]"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"array\" for keyword \"prefixItems\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"array\" for keyword \"items\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "required-proto",
+  "cls": "Ajv",
+  "opts": {
+   "allErrors": true
+  },
+  "schema": "{\"required\":[\"constructor\",\"a\",\"\"],\"properties\":{\"toString\":{\"type\":\"string\"}}}",
+  "data": [
+   "{}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/required\",\"keyword\":\"required\",\"params\":{\"missingProperty\":\"a\"},\"message\":\"must have required property 'a'\"},{\"instancePath\":\"\",\"schemaPath\":\"#/required\",\"keyword\":\"required\",\"params\":{\"missingProperty\":\"\"},\"message\":\"must have required property ''\"},{\"instancePath\":\"/toString\",\"schemaPath\":\"#/properties/toString/type\",\"keyword\":\"type\",\"params\":{\"type\":\"string\"},\"message\":\"must be string\"}]",
+    "data": "{}"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"object\" for keyword \"required\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"object\" for keyword \"properties\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "required-own",
+  "cls": "Ajv",
+  "opts": {
+   "ownProperties": true,
+   "allErrors": true
+  },
+  "schema": "{\"required\":[\"constructor\"],\"properties\":{\"toString\":{\"type\":\"string\"}}}",
+  "data": [
+   "{}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/required\",\"keyword\":\"required\",\"params\":{\"missingProperty\":\"constructor\"},\"message\":\"must have required property 'constructor'\"}]",
+    "data": "{}"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"object\" for keyword \"required\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"object\" for keyword \"properties\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "deps",
+  "cls": "Ajv",
+  "opts": {
+   "allErrors": true
+  },
+  "schema": "{\"dependencies\":{\"a\":[\"b\",\"c\"],\"d\":{\"required\":[\"e\"]}}}",
+  "data": [
+   "{\"a\":1,\"d\":1}",
+   "{\"a\":1,\"b\":1,\"c\":1}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/dependencies\",\"keyword\":\"dependencies\",\"params\":{\"property\":\"a\",\"missingProperty\":\"b\",\"depsCount\":2,\"deps\":\"b, c\"},\"message\":\"must have properties b, c when property a is present\"},{\"instancePath\":\"\",\"schemaPath\":\"#/dependencies\",\"keyword\":\"dependencies\",\"params\":{\"property\":\"a\",\"missingProperty\":\"c\",\"depsCount\":2,\"deps\":\"b, c\"},\"message\":\"must have properties b, c when property a is present\"},{\"instancePath\":\"\",\"schemaPath\":\"#/dependencies/d/required\",\"keyword\":\"required\",\"params\":{\"missingProperty\":\"e\"},\"message\":\"must have required property 'e'\"}]",
+    "data": "{\"a\":1,\"d\":1}"
+   },
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "{\"a\":1,\"b\":1,\"c\":1}"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"object\" for keyword \"dependencies\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"object\" for keyword \"required\" at \"#/dependencies/d\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "propertyNames",
+  "cls": "Ajv",
+  "opts": {
+   "allErrors": true
+  },
+  "schema": "{\"propertyNames\":{\"maxLength\":2,\"pattern\":\"^a\"}}",
+  "data": [
+   "{\"abc\":1,\"b\":2,\"ab\":3}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/propertyNames/maxLength\",\"keyword\":\"maxLength\",\"params\":{\"limit\":2},\"message\":\"must NOT have more than 2 characters\",\"propertyName\":\"abc\"},{\"instancePath\":\"\",\"schemaPath\":\"#/propertyNames\",\"keyword\":\"propertyNames\",\"params\":{\"propertyName\":\"abc\"},\"message\":\"property name must be valid\"},{\"instancePath\":\"\",\"schemaPath\":\"#/propertyNames/pattern\",\"keyword\":\"pattern\",\"params\":{\"pattern\":\"^a\"},\"message\":\"must match pattern \\\"^a\\\"\",\"propertyName\":\"b\"},{\"instancePath\":\"\",\"schemaPath\":\"#/propertyNames\",\"keyword\":\"propertyNames\",\"params\":{\"propertyName\":\"b\"},\"message\":\"property name must be valid\"}]",
+    "data": "{\"abc\":1,\"b\":2,\"ab\":3}"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"object\" for keyword \"propertyNames\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "min-max-props",
+  "cls": "Ajv",
+  "opts": {},
+  "schema": "{\"minProperties\":2,\"maxProperties\":3}",
+  "data": [
+   "{\"a\":1}",
+   "{\"a\":1,\"b\":2}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/minProperties\",\"keyword\":\"minProperties\",\"params\":{\"limit\":2},\"message\":\"must NOT have fewer than 2 properties\"}]",
+    "data": "{\"a\":1}"
+   },
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "{\"a\":1,\"b\":2}"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"object\" for keyword \"maxProperties\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"object\" for keyword \"minProperties\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "oneOf",
+  "cls": "Ajv",
+  "opts": {},
+  "schema": "{\"oneOf\":[{\"type\":\"number\"},{\"minimum\":2},{\"maximum\":10}]}",
+  "data": [
+   "5",
+   "1",
+   "\"x\""
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/oneOf\",\"keyword\":\"oneOf\",\"params\":{\"passingSchemas\":[0,1]},\"message\":\"must match exactly one schema in oneOf\"}]",
+    "data": "5"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/oneOf/1/minimum\",\"keyword\":\"minimum\",\"params\":{\"comparison\":\">=\",\"limit\":2},\"message\":\"must be >= 2\"},{\"instancePath\":\"\",\"schemaPath\":\"#/oneOf\",\"keyword\":\"oneOf\",\"params\":{\"passingSchemas\":[0,2]},\"message\":\"must match exactly one schema in oneOf\"}]",
+    "data": "1"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/oneOf/0/type\",\"keyword\":\"type\",\"params\":{\"type\":\"number\"},\"message\":\"must be number\"},{\"instancePath\":\"\",\"schemaPath\":\"#/oneOf\",\"keyword\":\"oneOf\",\"params\":{\"passingSchemas\":[1,2]},\"message\":\"must match exactly one schema in oneOf\"}]",
+    "data": "\"x\""
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"number\" for keyword \"minimum\" at \"#/oneOf/1\" (strictTypes)",
+   "strict mode: missing type \"number\" for keyword \"maximum\" at \"#/oneOf/2\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "anyOf-allErrors",
+  "cls": "Ajv",
+  "opts": {
+   "allErrors": true
+  },
+  "schema": "{\"anyOf\":[{\"type\":\"string\"},{\"type\":\"number\",\"minimum\":3}]}",
+  "data": [
+   "1",
+   "true",
+   "5"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/anyOf/0/type\",\"keyword\":\"type\",\"params\":{\"type\":\"string\"},\"message\":\"must be string\"},{\"instancePath\":\"\",\"schemaPath\":\"#/anyOf/1/minimum\",\"keyword\":\"minimum\",\"params\":{\"comparison\":\">=\",\"limit\":3},\"message\":\"must be >= 3\"},{\"instancePath\":\"\",\"schemaPath\":\"#/anyOf\",\"keyword\":\"anyOf\",\"params\":{},\"message\":\"must match a schema in anyOf\"}]",
+    "data": "1"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/anyOf/0/type\",\"keyword\":\"type\",\"params\":{\"type\":\"string\"},\"message\":\"must be string\"},{\"instancePath\":\"\",\"schemaPath\":\"#/anyOf/1/type\",\"keyword\":\"type\",\"params\":{\"type\":\"number\"},\"message\":\"must be number\"},{\"instancePath\":\"\",\"schemaPath\":\"#/anyOf\",\"keyword\":\"anyOf\",\"params\":{},\"message\":\"must match a schema in anyOf\"}]",
+    "data": "true"
+   },
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "5"
+   }
+  ],
+  "warnings": []
+ },
+ {
+  "name": "not",
+  "cls": "Ajv",
+  "opts": {},
+  "schema": "{\"not\":{\"type\":\"string\"}}",
+  "data": [
+   "\"a\"",
+   "1"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/not\",\"keyword\":\"not\",\"params\":{},\"message\":\"must NOT be valid\"}]",
+    "data": "\"a\""
+   },
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "1"
+   }
+  ],
+  "warnings": []
+ },
+ {
+  "name": "if-then-else",
+  "cls": "Ajv",
+  "opts": {
+   "allErrors": true
+  },
+  "schema": "{\"if\":{\"minimum\":5},\"then\":{\"multipleOf\":2},\"else\":{\"multipleOf\":3}}",
+  "data": [
+   "6",
+   "7",
+   "4",
+   "3"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "6"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/then/multipleOf\",\"keyword\":\"multipleOf\",\"params\":{\"multipleOf\":2},\"message\":\"must be multiple of 2\"},{\"instancePath\":\"\",\"schemaPath\":\"#/if\",\"keyword\":\"if\",\"params\":{\"failingKeyword\":\"then\"},\"message\":\"must match \\\"then\\\" schema\"}]",
+    "data": "7"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/else/multipleOf\",\"keyword\":\"multipleOf\",\"params\":{\"multipleOf\":3},\"message\":\"must be multiple of 3\"},{\"instancePath\":\"\",\"schemaPath\":\"#/if\",\"keyword\":\"if\",\"params\":{\"failingKeyword\":\"else\"},\"message\":\"must match \\\"else\\\" schema\"}]",
+    "data": "4"
+   },
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "3"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"number\" for keyword \"minimum\" at \"#/if\" (strictTypes)",
+   "strict mode: missing type \"number\" for keyword \"multipleOf\" at \"#/then\" (strictTypes)",
+   "strict mode: missing type \"number\" for keyword \"multipleOf\" at \"#/else\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "const-enum",
+  "cls": "Ajv",
+  "opts": {
+   "allErrors": true
+  },
+  "schema": "{\"const\":{\"a\":[1]},\"enum\":[1,{\"a\":[1]},\"x\"]}",
+  "data": [
+   "{\"a\":[1]}",
+   "1",
+   "\"y\""
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "{\"a\":[1]}"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/const\",\"keyword\":\"const\",\"params\":{\"allowedValue\":{\"a\":[1]}},\"message\":\"must be equal to constant\"}]",
+    "data": "1"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/const\",\"keyword\":\"const\",\"params\":{\"allowedValue\":{\"a\":[1]}},\"message\":\"must be equal to constant\"},{\"instancePath\":\"\",\"schemaPath\":\"#/enum\",\"keyword\":\"enum\",\"params\":{\"allowedValues\":[1,{\"a\":[1]},\"x\"]},\"message\":\"must be equal to one of the allowed values\"}]",
+    "data": "\"y\""
+   }
+  ],
+  "warnings": []
+ },
+ {
+  "name": "ref-inline",
+  "cls": "Ajv",
+  "opts": {},
+  "schema": "{\"definitions\":{\"n\":{\"type\":\"number\"}},\"properties\":{\"a\":{\"$ref\":\"#/definitions/n\"}}}",
+  "data": [
+   "{\"a\":\"x\"}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"/a\",\"schemaPath\":\"#/definitions/n/type\",\"keyword\":\"type\",\"params\":{\"type\":\"number\"},\"message\":\"must be number\"}]",
+    "data": "{\"a\":\"x\"}"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"object\" for keyword \"properties\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "ref-noinline",
+  "cls": "Ajv",
+  "opts": {
+   "inlineRefs": false
+  },
+  "schema": "{\"definitions\":{\"n\":{\"type\":\"number\"}},\"properties\":{\"a\":{\"$ref\":\"#/definitions/n\"}}}",
+  "data": [
+   "{\"a\":\"x\"}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"/a\",\"schemaPath\":\"#/type\",\"keyword\":\"type\",\"params\":{\"type\":\"number\"},\"message\":\"must be number\"}]",
+    "data": "{\"a\":\"x\"}"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"object\" for keyword \"properties\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "ref-recursive",
+  "cls": "Ajv",
+  "opts": {},
+  "schema": "{\"type\":\"object\",\"properties\":{\"c\":{\"$ref\":\"#\"},\"v\":{\"type\":\"number\"}}}",
+  "data": [
+   "{\"c\":{\"c\":{\"v\":\"x\"}}}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"/c/c/v\",\"schemaPath\":\"#/properties/v/type\",\"keyword\":\"type\",\"params\":{\"type\":\"number\"},\"message\":\"must be number\"}]",
+    "data": "{\"c\":{\"c\":{\"v\":\"x\"}}}"
+   }
+  ],
+  "warnings": []
+ },
+ {
+  "name": "ref-missing",
+  "cls": "Ajv",
+  "opts": {},
+  "schema": "{\"$ref\":\"other.json#/x\"}",
+  "data": [],
+  "compile": "can't resolve reference other.json#/x from id #",
+  "results": [],
+  "warnings": []
+ },
+ {
+  "name": "ref-id",
+  "cls": "Ajv",
+  "opts": {},
+  "schema": "{\"$id\":\"http://x.com/root\",\"definitions\":{\"a\":{\"$id\":\"a.json\",\"type\":\"string\"}},\"$ref\":\"a.json\"}",
+  "data": [
+   "1",
+   "\"s\""
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"a.json/type\",\"keyword\":\"type\",\"params\":{\"type\":\"string\"},\"message\":\"must be string\"}]",
+    "data": "1"
+   },
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "\"s\""
+   }
+  ],
+  "warnings": []
+ },
+ {
+  "name": "ref-ambiguous",
+  "cls": "Ajv",
+  "opts": {},
+  "schema": "{\"definitions\":{\"a\":{\"$id\":\"#x\",\"type\":\"string\"},\"b\":{\"$id\":\"#x\",\"type\":\"number\"}}}",
+  "data": [],
+  "compile": "reference \"#x\" resolves to more than one schema",
+  "results": [],
+  "warnings": []
+ },
+ {
+  "name": "unevaluatedProperties",
+  "cls": "Ajv2019",
+  "opts": {
+   "allErrors": true
+  },
+  "schema": "{\"properties\":{\"a\":{}},\"allOf\":[{\"properties\":{\"b\":{}}}],\"unevaluatedProperties\":false}",
+  "data": [
+   "{\"a\":1,\"b\":2,\"c\":3,\"constructor\":4}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/unevaluatedProperties\",\"keyword\":\"unevaluatedProperties\",\"params\":{\"unevaluatedProperty\":\"c\"},\"message\":\"must NOT have unevaluated properties\"},{\"instancePath\":\"\",\"schemaPath\":\"#/unevaluatedProperties\",\"keyword\":\"unevaluatedProperties\",\"params\":{\"unevaluatedProperty\":\"constructor\"},\"message\":\"must NOT have unevaluated properties\"}]",
+    "data": "{\"a\":1,\"b\":2,\"c\":3,\"constructor\":4}"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"object\" for keyword \"properties\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"object\" for keyword \"unevaluatedProperties\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"object\" for keyword \"properties\" at \"#/allOf/0\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "unevaluatedItems",
+  "cls": "Ajv2020",
+  "opts": {},
+  "schema": "{\"prefixItems\":[{}],\"unevaluatedItems\":{\"type\":\"string\"}}",
+  "data": [
+   "[1,\"a\",2]"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"/2\",\"schemaPath\":\"#/unevaluatedItems/type\",\"keyword\":\"type\",\"params\":{\"type\":\"string\"},\"message\":\"must be string\"}]",
+    "data": "[1,\"a\",2]"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"array\" for keyword \"prefixItems\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"array\" for keyword \"unevaluatedItems\" at \"#\" (strictTypes)",
+   "strict mode: \"prefixItems\" is 1-tuple, but minItems or maxItems/items are not specified or different at path \"#\""
+  ]
+ },
+ {
+  "name": "unevaluated-dynamic",
+  "cls": "Ajv2020",
+  "opts": {},
+  "schema": "{\"anyOf\":[{\"properties\":{\"a\":{}}},{\"properties\":{\"b\":{}}}],\"unevaluatedProperties\":false}",
+  "data": [
+   "{\"a\":1,\"c\":1}",
+   "{\"b\":1}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/unevaluatedProperties\",\"keyword\":\"unevaluatedProperties\",\"params\":{\"unevaluatedProperty\":\"c\"},\"message\":\"must NOT have unevaluated properties\"}]",
+    "data": "{\"a\":1,\"c\":1}"
+   },
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "{\"b\":1}"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"object\" for keyword \"unevaluatedProperties\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"object\" for keyword \"properties\" at \"#/anyOf/0\" (strictTypes)",
+   "strict mode: missing type \"object\" for keyword \"properties\" at \"#/anyOf/1\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "dynamicRef",
+  "cls": "Ajv2020",
+  "opts": {},
+  "schema": "{\"$id\":\"http://x/tree\",\"$dynamicAnchor\":\"node\",\"type\":\"object\",\"properties\":{\"kids\":{\"type\":\"array\",\"items\":{\"$dynamicRef\":\"#node\"}}}}",
+  "data": [
+   "{\"kids\":[{\"kids\":[1]}]}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"/kids/0/kids/0\",\"schemaPath\":\"#/type\",\"keyword\":\"type\",\"params\":{\"type\":\"object\"},\"message\":\"must be object\"}]",
+    "data": "{\"kids\":[{\"kids\":[1]}]}"
+   }
+  ],
+  "warnings": []
+ },
+ {
+  "name": "recursiveRef",
+  "cls": "Ajv2019",
+  "opts": {},
+  "schema": "{\"$id\":\"http://x/r\",\"$recursiveAnchor\":true,\"type\":\"object\",\"additionalProperties\":{\"$recursiveRef\":\"#\"}}",
+  "data": [
+   "{\"a\":{\"b\":1}}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"/a/b\",\"schemaPath\":\"#/type\",\"keyword\":\"type\",\"params\":{\"type\":\"object\"},\"message\":\"must be object\"}]",
+    "data": "{\"a\":{\"b\":1}}"
+   }
+  ],
+  "warnings": []
+ },
+ {
+  "name": "defaults",
+  "cls": "Ajv",
+  "opts": {
+   "useDefaults": true
+  },
+  "schema": "{\"properties\":{\"a\":{\"default\":{\"x\":[1]}},\"b\":{\"default\":\"s\"},\"c\":{\"properties\":{\"d\":{\"default\":1}},\"default\":{}}}}",
+  "data": [
+   "{\"b\":null}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "{\"b\":null,\"a\":{\"x\":[1]},\"c\":{\"d\":1}}"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"object\" for keyword \"properties\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"object\" for keyword \"properties\" at \"#/properties/c\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "defaults-empty",
+  "cls": "Ajv",
+  "opts": {
+   "useDefaults": "empty"
+  },
+  "schema": "{\"properties\":{\"a\":{\"default\":1},\"b\":{\"default\":2}}}",
+  "data": [
+   "{\"a\":\"\",\"b\":null}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "{\"a\":1,\"b\":2}"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"object\" for keyword \"properties\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "removeAdditional-all",
+  "cls": "Ajv",
+  "opts": {
+   "removeAdditional": "all"
+  },
+  "schema": "{\"properties\":{\"a\":{\"type\":\"number\"}}}",
+  "data": [
+   "{\"a\":1,\"b\":2}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "{\"a\":1}"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"object\" for keyword \"properties\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "removeAdditional-failing",
+  "cls": "Ajv",
+  "opts": {
+   "removeAdditional": "failing"
+  },
+  "schema": "{\"properties\":{\"a\":{}},\"additionalProperties\":{\"type\":\"number\"}}",
+  "data": [
+   "{\"a\":1,\"b\":\"x\",\"c\":2}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "{\"a\":1,\"c\":2}"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"object\" for keyword \"additionalProperties\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"object\" for keyword \"properties\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "removeAdditional-true",
+  "cls": "Ajv",
+  "opts": {
+   "removeAdditional": true
+  },
+  "schema": "{\"properties\":{\"a\":{}},\"additionalProperties\":false}",
+  "data": [
+   "{\"a\":1,\"b\":\"x\"}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "{\"a\":1}"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"object\" for keyword \"additionalProperties\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"object\" for keyword \"properties\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "strict-unknown",
+  "cls": "Ajv",
+  "opts": {},
+  "schema": "{\"foo\":1}",
+  "data": [],
+  "compile": "strict mode: unknown keyword: \"foo\"",
+  "results": [],
+  "warnings": []
+ },
+ {
+  "name": "strict-types",
+  "cls": "Ajv",
+  "opts": {
+   "strictTypes": true
+  },
+  "schema": "{\"type\":\"number\",\"properties\":{\"a\":{}}}",
+  "data": [],
+  "compile": "strict mode: missing type \"object\" for keyword \"properties\" at \"#\" (strictTypes)",
+  "results": [],
+  "warnings": []
+ },
+ {
+  "name": "strict-required",
+  "cls": "Ajv",
+  "opts": {
+   "strictRequired": true
+  },
+  "schema": "{\"type\":\"object\",\"required\":[\"a\"]}",
+  "data": [],
+  "compile": "strict mode: required property \"a\" is not defined at \"#\" (strictRequired)",
+  "results": [],
+  "warnings": []
+ },
+ {
+  "name": "format-unknown",
+  "cls": "Ajv",
+  "opts": {},
+  "schema": "{\"format\":\"email\"}",
+  "data": [],
+  "compile": "unknown format \"email\" ignored in schema at path \"#\"",
+  "results": [],
+  "warnings": [
+   "strict mode: missing type \"number,string\" for keyword \"format\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "schema-invalid",
+  "cls": "Ajv",
+  "opts": {},
+  "schema": "{\"type\":\"foo\",\"minLength\":-1}",
+  "data": [],
+  "compile": "schema is invalid: data/minLength must be >= 0",
+  "results": [],
+  "warnings": []
+ },
+ {
+  "name": "schema-invalid-2020",
+  "cls": "Ajv2020",
+  "opts": {},
+  "schema": "{\"properties\":1}",
+  "data": [],
+  "compile": "schema is invalid: data/properties must be object",
+  "results": [],
+  "warnings": []
+ },
+ {
+  "name": "discriminator",
+  "cls": "Ajv",
+  "opts": {
+   "discriminator": true
+  },
+  "schema": "{\"type\":\"object\",\"discriminator\":{\"propertyName\":\"k\"},\"required\":[\"k\"],\"oneOf\":[{\"properties\":{\"k\":{\"const\":\"a\"},\"v\":{\"type\":\"number\"}}},{\"properties\":{\"k\":{\"enum\":[\"b\",\"c\"]}}}]}",
+  "data": [
+   "{\"k\":\"a\",\"v\":\"x\"}",
+   "{\"k\":\"z\"}",
+   "{\"k\":1}",
+   "{\"k\":\"c\"}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"/v\",\"schemaPath\":\"#/oneOf/0/properties/v/type\",\"keyword\":\"type\",\"params\":{\"type\":\"number\"},\"message\":\"must be number\"}]",
+    "data": "{\"k\":\"a\",\"v\":\"x\"}"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/discriminator\",\"keyword\":\"discriminator\",\"params\":{\"error\":\"mapping\",\"tag\":\"k\",\"tagValue\":\"z\"},\"message\":\"value of tag \\\"k\\\" must be in oneOf\"}]",
+    "data": "{\"k\":\"z\"}"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/discriminator\",\"keyword\":\"discriminator\",\"params\":{\"error\":\"tag\",\"tag\":\"k\",\"tagValue\":1},\"message\":\"tag \\\"k\\\" must be string\"}]",
+    "data": "{\"k\":1}"
+   },
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "{\"k\":\"c\"}"
+   }
+  ],
+  "warnings": []
+ },
+ {
+  "name": "data-ref",
+  "cls": "Ajv",
+  "opts": {
+   "$data": true,
+   "allErrors": true
+  },
+  "schema": "{\"properties\":{\"min\":{},\"v\":{\"minimum\":{\"$data\":\"1/min\"}},\"s\":{\"const\":{\"$data\":\"/v\"}}}}",
+  "data": [
+   "{\"min\":5,\"v\":3,\"s\":3}",
+   "{\"min\":\"x\",\"v\":3,\"s\":4}",
+   "{\"v\":3}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"/v\",\"schemaPath\":\"#/properties/v/minimum\",\"keyword\":\"minimum\",\"params\":{\"comparison\":\">=\",\"limit\":5},\"message\":\"must be >= 5\"}]",
+    "data": "{\"min\":5,\"v\":3,\"s\":3}"
+   },
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"/v\",\"schemaPath\":\"#/properties/v/minimum\",\"keyword\":\"minimum\",\"params\":{\"comparison\":\">=\",\"limit\":\"x\"},\"message\":\"must be >= x\"},{\"instancePath\":\"/s\",\"schemaPath\":\"#/properties/s/const\",\"keyword\":\"const\",\"params\":{\"allowedValue\":3},\"message\":\"must be equal to constant\"}]",
+    "data": "{\"min\":\"x\",\"v\":3,\"s\":4}"
+   },
+   {
+    "valid": true,
+    "errors": "null",
+    "data": "{\"v\":3}"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"object\" for keyword \"properties\" at \"#\" (strictTypes)",
+   "strict mode: missing type \"number\" for keyword \"minimum\" at \"#/properties/v\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "verbose",
+  "cls": "Ajv",
+  "opts": {
+   "verbose": true
+  },
+  "schema": "{\"properties\":{\"a\":{\"type\":\"number\"}}}",
+  "data": [
+   "{\"a\":\"x\"}"
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"/a\",\"schemaPath\":\"#/properties/a/type\",\"keyword\":\"type\",\"params\":{\"type\":\"number\"},\"message\":\"must be number\"}]",
+    "data": "{\"a\":\"x\"}"
+   }
+  ],
+  "warnings": [
+   "strict mode: missing type \"object\" for keyword \"properties\" at \"#\" (strictTypes)"
+  ]
+ },
+ {
+  "name": "messages-off",
+  "cls": "Ajv",
+  "opts": {
+   "messages": false
+  },
+  "schema": "{\"type\":\"number\"}",
+  "data": [
+   "\"x\""
+  ],
+  "compile": "ok",
+  "results": [
+   {
+    "valid": false,
+    "errors": "[{\"instancePath\":\"\",\"schemaPath\":\"#/type\",\"keyword\":\"type\",\"params\":{\"type\":\"number\"}}]",
+    "data": "\"x\""
+   }
+  ],
+  "warnings": []
+ }
+]

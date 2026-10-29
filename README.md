@@ -16,6 +16,32 @@ Supports JSON Schema draft-04/06/07/2019-09/2020-12 ([draft-04 support](https://
 [![Gitter](https://img.shields.io/gitter/room/ajv-validator/ajv.svg)](https://gitter.im/ajv-validator/ajv)
 [![GitHub Sponsors](https://img.shields.io/badge/$-sponsors-brightgreen)](https://github.com/sponsors/epoberezkin)
 
+## Go module
+
+This repository is now a Go library, `github.com/ajv-validator/ajv-go` (package `ajv`), a port of
+Ajv 8.20.0's draft-07, draft 2019-09 and draft 2020-12 validators. It reproduces the original's
+error objects and their order, its exception and logger messages and the changes validation makes
+to data, including the JavaScript semantics Ajv's generated code relies on. It has no dependencies.
+
+```go
+import ajv "github.com/ajv-validator/ajv-go"
+
+a := ajv.New2020(ajv.Options{AllErrors: true})
+schema, _ := ajv.ParseJSON(`{"type": "object", "required": ["id"]}`)
+validate, err := a.Compile(schema)
+if err != nil {
+	// the schema is invalid
+}
+data, _ := ajv.ParseJSON(`{"name": "x"}`)
+if !validate.Validate(data) {
+	fmt.Println(a.ErrorsText(validate.Errors(), ajv.ErrorsTextOptions{}))
+}
+```
+
+Build and test with `go build ./...` and `go test ./...`. JSON Type Definition, standalone code,
+formats (ajv-formats) and the command line are not part of the port. The documentation below
+describes the original JavaScript package.
+
 ## Ajv sponsors
 
 [<img src="https://ajv.js.org/img/mozilla.svg" width="45%" alt="Mozilla">](https://www.mozilla.org)<img src="https://ajv.js.org/img/gap.svg" width="9%">[<img src="https://ajv.js.org/img/reserved.svg" width="45%">](https://opencollective.com/ajv)

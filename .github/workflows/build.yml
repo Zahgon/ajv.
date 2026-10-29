@@ -12,25 +12,14 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x, 24.x]
+        go-version: ["1.27.x"]
 
     steps:
       - uses: actions/checkout@v4
-      - name: use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - name: use Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
         with:
-          node-version: ${{ matrix.node-version }}
-      - run: npm install
-      - run: git submodule update --init
-      - name: update website
-        if: ${{ github.event_name == 'push' && matrix.node-version == '18.x' }}
-        run: ./scripts/publish-site
-        env:
-          GIT_USER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
-          GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
-      - run: npm run build
-      - run: npm run test-ci
-      - name: coveralls
-        uses: coverallsapp/github-action@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          go-version: ${{ matrix.go-version }}
+      - run: go vet ./...
+      - run: go build ./...
+      - run: go test ./...
